@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Calendar Fix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .calendar-tray::-webkit-scrollbar { width: 8px; }
+        .calendar-tray::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        /* Ensure the canvas has a specific height for the absolute children */
+        #canvas { height: 1440px; position: relative; width: 100%; }
+    </style>
+</head>
+<body class="bg-white h-screen flex flex-col font-sans text-gray-700">
+
+    <header class="border-b border-gray-200 px-4 py-3 flex items-center justify-between bg-white sticky top-0 z-50">
+        <div class="flex items-center gap-4">
+            <span class="text-xl font-bold text-blue-600">DayFlow</span>
+            <div class="flex items-center gap-2 bg-gray-100 p-2 rounded-lg">
+                <input type="time" id="start-time" value="09:00" class="bg-transparent text-sm outline-none">
+                <span class="text-gray-400">to</span>
+                <input type="time" id="end-time" value="10:00" class="bg-transparent text-sm outline-none">
+                <input type="text" id="event-title" placeholder="Event Title" class="bg-transparent text-sm border-l border-gray-300 pl-3 outline-none w-40">
+                <button onclick="createEvent()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm font-bold transition">
+                    Add
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto calendar-tray">
+        <div class="flex w-full">
+            
+            <div class="w-20 border-r border-gray-200 bg-gray-50 flex-shrink-0">
+                <div id="time-slots">
+                    </div>
+            </div>
+
+            <div id="canvas" class="flex-1 bg-[linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[length:100%_60px]">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Generate the 24-hour time labels on the left
+        const timeSlotsContainer = document.getElementById('time-slots');
+        for (let i = 0; i < 24; i++) {
+            const slot = document.createElement('div');
+            slot.className = "h-[60px] text-[11px] text-gray-400 pr-2 pt-1 text-right border-b border-gray-100";
+            const period = i < 12 ? 'AM' : 'PM';
+            const hour = i === 0 ? 12 : i > 12 ? i - 12 : i;
+            slot.innerText = `${hour} ${period}`;
+            timeSlotsContainer.appendChild(slot);
+        }
+
+        // 2. Helper to convert "HH:MM" to total minutes from midnight
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return (h * 60) + m;
+        }
+
+        // 3. The Main Function
+        function createEvent() {
+            const startStr = document.getElementById('start-time').value;
+            const endStr = document.getElementById('end-time').value;
+            const title = document.getElementById('event-title').value;
+            const canvas = document.getElementById('canvas');
+
+            // Validation
+            if (!startStr || !endStr || !title) {
+                alert("Please enter a title, start time, and end time.");
+                return;
+            }
+
+            const startMins = timeToMinutes(startStr);
+            const endMins = timeToMinutes(endStr);
+
+            if (endMins <= startMins) {
+                alert("The end time must be later than the start time!");
+                return;
+            }
+
+            const duration = endMins - startMins;
+
+            // Create Event Element
+            const eventCard = document.createElement('div');
+            
+            // Positioning and Styling
+            eventCard.className = "absolute left-2 right-6 bg-blue-500 text-white rounded-md p-2 shadow-md border border-white/20 z-10 group overflow-hidden transition-all hover:scale-[1.01]";
+            
+            // 1 minute = 1 pixel
+            eventCard.style.top = `${startMins}px`; 
+            eventCard.style.height = `${duration}px`;
+
+            eventCard.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div class="truncate">
+                        <p class="text-xs font-bold leading-tight">${title}</p>
+                        <p class="text-[10px] opacity-80">${startStr} - ${endStr}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-white hover:text-red-200 text-lg leading-none">&times;</button>
+                </div>
+            `;
+
+            // Append to canvas
+            canvas.appendChild(eventCard);
+
+            // Optional: Scroll to the new event
+            eventCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Clear title input for next event
+            document.getElementById('event-title').value = '';
+        }
+    </script>
+</body>
+</html>
