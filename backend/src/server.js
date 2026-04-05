@@ -1,14 +1,18 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const express = require('express');
+const cors = require('cors');
 const { GoogleGenAI } = require('@google/genai');
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 const client = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
 
 app.post('/chat', async (req, res) => {
   const { message } = req.body;
+
+  console.log(req.body);
 
   if (!message) {
     return res.status(400).json({ error: 'Message is required' });
@@ -19,7 +23,7 @@ app.post('/chat', async (req, res) => {
       model: 'gemini-2.5-flash',
       contents: [{ 
         role: 'user', 
-        parts: [{ text: message + '\n\nRespond with only valid JSON, no markdown, no explanation, no code blocks. The fields should be start_time, end_time, activity, priority' }] 
+        parts: [{ text: message + '\n\nRespond with only valid JSON, no markdown, no explanation, no code blocks.' }] 
       }]
     });
 
