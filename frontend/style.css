@@ -65,3 +65,4 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   .timeline-scroll { overflow: visible !important; height: auto !important; }
   .timeline-grid, .events-layer { height: 1248px !important; } /* 24 * 52px */
 }
+

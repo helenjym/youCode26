@@ -5,8 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calendar Scheduler</title>
   <link rel="stylesheet" href="style.css"></link>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 </head>
 <body>
+   <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="http://127.0.0.1:5500/frontend/index.html">Scheduler</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"  href="http://127.0.0.1:5500/frontend/employment.html">Employment Searching</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Pricing</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
 <div class="app">
   <div class="timeline-panel">
@@ -59,20 +80,53 @@
   </div>
 </div>
 
-<div id="free-block-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center;">
-  <div style="background: #fff; width: 340px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative;">
-    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Schedule Free Blocks</h3>
-    <p style="font-size: 13px; color: #5f5e5a; margin-bottom: 20px; line-height: 1.5;">
-      Would you like to automatically fill gaps in your schedule with "Free Block" periods?
-    </p>
+<div id="free-block-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: #fff; width: 500px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative;">
     
-    <div style="display: flex; flex-direction: column; gap: 10px;">
-      <button id="confirm-free-blocks" style="width: 100%; padding: 10px; background: #1c1c1a; color: #fff; border: none; border-radius: 8px; font-size: 13px; cursor: pointer;">Generate Blocks</button>
-      <button id="close-modal" style="width: 100%; padding: 10px; background: #fff; color: #5f5e5a; border: 1px solid #d3d1c7; border-radius: 8px; font-size: 13px; cursor: pointer;">Cancel</button>
+    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Schedule Free Blocks</h3>
+
+    <!-- Activity cards will appear here -->
+    <div id="activity-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;"></div>
+
+    <!-- Add activity form (hidden by default) -->
+    <div id="add-activity-form" style="display: none; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+      <div class="mb-3">
+        <label class="form-label" style="font-size: 14px; font-weight: 500;">Activity</label>
+        <input type="text" id="activity-input" class="form-control form-control-sm" placeholder="Enter activity name" list="activity-suggestions">
+        <datalist id="activity-suggestions">
+          <option value="Reading">
+          <option value="Exercise">
+          <option value="Cooking">
+          <option value="Walking">
+          <option value="Meditation">
+        </datalist>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" style="font-size: 14px; font-weight: 500;">Priority</label>
+        <select id="priority-input" class="form-select form-select-sm">
+          <option value="" disabled selected>Select priority</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button onclick="confirmAddActivity()" class="btn btn-sm btn-dark">Confirm</button>
+        <button onclick="cancelAddActivity()" class="btn btn-sm btn-outline-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Add activity button -->
+    <button id="add-activity-btn" onclick="showAddActivityForm()" class="btn btn-sm btn-outline-dark w-100">+ Add Activity</button>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+      <button onclick="closeFreeBlockModal()" class="btn btn-sm btn-dark">Done</button>
     </div>
   </div>
 </div>
 
 <script src="script.js"></script>
+<script src="popup.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 </html>

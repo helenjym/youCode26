@@ -177,3 +177,4 @@ console.log("Generating free blocks...");
 modal.style.display = 'none';
 renderEvents();
 });
+
