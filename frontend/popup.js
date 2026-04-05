@@ -52,8 +52,53 @@ function confirmAddActivity() {
   cancelAddActivity();
 }
 
-function closeFreeBlockModal() {
+async function closeFreeBlockModal() {
   document.getElementById('free-block-modal').style.display = 'none';
+
+  if (activityData.length === 0 || freeBlocks.length === 0) {
+    console.warn('No activities or free blocks to schedule');
+    return;
+  }
+
+  const message = `
+    I have the following free time blocks: ${JSON.stringify(freeBlocks)}.
+    I want to fill them with these activities and priorities: ${JSON.stringify(activityData)}.
+    I do not need to fill up all my free time blocks.
+    Assign each activity to a free block. Return a JSON array where each object has start_time, end_time, activity, priority.
+  `;
+
+  try {
+    const response = await fetch('http://localhost:3000/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    });
+
+    const result = await response.json();
+    console.log('Scheduled activities:', result);
+
+    // Remove all existing free blocks from the calendar
+    events = events.filter(e => e.colorIdx !== 7 && e.name !== 'FREE BLOCK');
+    freeBlocks = [];
+
+    // Add the new scheduled activities
+    result.forEach(item => {
+      events.push({
+        id: Date.now() + Math.random(),
+        name: item.activity,
+        start: item.start_time,
+        end: item.end_time,
+        colorIdx: 5
+      });
+    });
+
+    renderEvents();
+
+  } catch (err) {
+    console.error('Error scheduling activities:', err);
+  }
+
+  activityData = [];
 }
 
 function deleteActivity(btn) {
