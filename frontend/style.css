@@ -54,7 +54,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .add-btn:hover { background: #f0eeea; }
 
 /* Shelter Events List */
-#shelter-events-container { max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 8px; }
+#shelter-events-container { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 8px; }
 .shelter-card { background: #fff; border: 1px solid #e5e5e4; border-radius: 8px; padding: 12px; position: relative; }
 
 /* Print styles */

@@ -76,19 +76,40 @@ function renderEvents() {
 }
 
 async function fetchShelterEvents() {
-  try {
-    const response = await fetch('https://jsonplaceholder.typicode.com/users');
-    const rawData = await response.json();
-    fetchedShelterEvents = rawData.slice(0, 5).map((user, i) => ({
-      name: `Shift: ${user.company.bs.split(' ')[0]}`,
-      start: `${10 + i}:00`,
-      end: `${11 + i}:30`,
-      desc: `Task for ${user.name}. Location: ${user.address.street}.`
-    }));
-    renderShelterCards();
-  } catch (e) {
-    document.getElementById('shelter-events-container').innerHTML = 'Failed to load.';
-  }
+  fetchedShelterEvents = [
+    {
+      name: 'Group counselling',
+      start: '09:00',
+      end: '10:00',
+      desc: 'A thoughtful, low-pressure space dedicated to acknowledging the anxiety of uncertain times and sharing experiences, centered on active listening and communal support.'
+    },
+    {
+      name: 'Navigating digital resources',
+      start: '10:30',
+      end: '11:30',
+      desc: 'A guided look at how to find and use digital tools for job placement, retraining programs, and community welfare resources.'
+    },
+    {
+      name: 'Lunch',
+      start: '12:00',
+      end: '13:00',
+      desc: 'A free, hot lunch featuring nutritious, comforting flavors, designed to fuel your body and provide a pressure-free space for community.'
+    },
+    {
+      name: 'Yoga',
+      start: '13:30',
+      end: '14:30',
+      desc: 'Clean and sanitize kennels. Replace bedding where needed.'
+    },
+    {
+      name: 'Adoption Event',
+      start: '15:00',
+      end: '17:00',
+      desc: 'A slow-paced, accessible practice focused on "steadying the nervous system" through breath and movement, acknowledging the weight of persistent thoughts while using intentional motion to anchor you in the present.'
+    }
+  ];
+
+  renderShelterCards();
 }
 
 function renderShelterCards() {
@@ -160,7 +181,20 @@ function showError(msg) {
   el.textContent = msg;
   el.style.display = 'block';
   setTimeout(() => el.style.display = 'none', 3000);
+
+
 }
+
+document.getElementById('free-block-checkbox').addEventListener('change', function() {
+  const nameInput = document.getElementById('ev-name');
+  if (this.checked) {
+    nameInput.value = 'FREE BLOCK';
+    nameInput.disabled = true;
+  } else {
+    nameInput.value = '';
+    nameInput.disabled = false;
+  }
+})
 
 document.getElementById('add-btn').addEventListener('click', () => {
     const nameInput = document.getElementById('ev-name');
