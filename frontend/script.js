@@ -117,20 +117,115 @@ window.addShelter = (i) => {
   renderEvents();
 };
 
+// Remove event from ui and free block list
 window.removeEvent = (id) => {
-  events = events.filter(e => String(e.id) !== String(id));
-  renderEvents();
-};
+    // 1. Find the event in the main list before deleting it
+    const eventToRemove = events.find(e => String(e.id) === String(id));
+    
+    if (!eventToRemove) return;
+  
+    // 2. If it's a "Free Block", remove it from the internal minimal array
+    // We match by start and end time since the internal objects are minimal
+    if (eventToRemove.colorIdx === 7 || eventToRemove.name === "FREE BLOCK") {
+      freeBlocks = freeBlocks.filter(block => 
+        !(block.start === eventToRemove.start && block.end === eventToRemove.end)
+      );
+      
+      console.log("Internal freeBlocks updated:", freeBlocks);
+    }
+  
+    // 3. Remove from the main events array for the UI
+    events = events.filter(e => String(e.id) !== String(id));
+    
+    renderEvents();
+  };
+
+// document.getElementById('add-btn').addEventListener('click', () => {
+//   const name = document.getElementById('ev-name').value;
+//   const start = document.getElementById('ev-start').value;
+//   const end = document.getElementById('ev-end').value;
+//   if (name && start && end) {
+//     events.push({ id: Date.now(), name, start, end, colorIdx: 0 });
+//     renderEvents();
+//   }
+// });
+
+// Internal arrays
+// let events = []; // Full objects for the calendar UI
+let freeBlocks = []; // Minimal objects: { start: "HH:MM", end: "HH:MM" }
+
+// Error helper
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
 
 document.getElementById('add-btn').addEventListener('click', () => {
-  const name = document.getElementById('ev-name').value;
-  const start = document.getElementById('ev-start').value;
-  const end = document.getElementById('ev-end').value;
-  if (name && start && end) {
-    events.push({ id: Date.now(), name, start, end, colorIdx: 0 });
+    const nameInput = document.getElementById('ev-name');
+    const start = document.getElementById('ev-start').value;
+    const end = document.getElementById('ev-end').value;
+    const isFreeChecked = document.getElementById('free-block-checkbox').checked;
+  
+    // 1. Basic Validation
+    if (!start || !end) return showError("Please set both times.");
+    
+    const newStart = timeToMinutes(start);
+    const newEnd = timeToMinutes(end);
+  
+    if (newEnd <= newStart) {
+      return showError("Error: End time must be after start time.");
+    }
+  
+    // 2. COLLISION CHECK (If adding a Free Block)
+    if (isFreeChecked) {
+      // Check if any existing NON-FREE event overlaps with this new slot
+      const hasCollision = events.some(ev => {
+        // Only care about actual events (colorIdx !== 7)
+        if (ev.colorIdx !== 7) {
+          const exStart = timeToMinutes(ev.start);
+          const exEnd = timeToMinutes(ev.end);
+          
+          // Overlap logic: (StartA < EndB) AND (EndA > StartB)
+          return newStart < exEnd && newEnd > exStart;
+        }
+        return false;
+      });
+  
+      if (hasCollision) {
+        return showError("Cannot add free block: An event is already scheduled here.");
+      }
+  
+      // Also check for duplicate Free Blocks (from previous requirement)
+      const isDuplicate = freeBlocks.some(b => b.start === start && b.end === end);
+      if (isDuplicate) return showError("This free block already exists.");
+    }
+  
+    // 3. Create the event
+    const newEvent = {
+      id: Date.now(),
+      name: isFreeChecked ? "FREE BLOCK" : nameInput.value.trim() || "Untitled Event",
+      start: start,
+      end: end,
+      colorIdx: isFreeChecked ? 7 : 0 
+    };
+  
+    events.push(newEvent);
+  
+    // 4. Update internal freeBlocks array
+    if (isFreeChecked) {
+      freeBlocks.push({ start: start, end: end });
+      console.log("Internal Free Blocks:", freeBlocks);
+    }
+  
+    // 5. Reset UI
+    nameInput.value = '';
+    document.getElementById('free-block-checkbox').checked = false;
+    nameInput.disabled = false;
+    
     renderEvents();
-  }
-});
+  });
 
 document.getElementById('print-btn').addEventListener('click', () => window.print());
 
