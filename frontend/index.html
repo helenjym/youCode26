@@ -27,15 +27,32 @@
       </ul>
     </div>
   </div>
+
+  <div class="collapse navbar-collapse" id="navbarNav">
+  <ul class="navbar-nav me-auto">
+    <li class="nav-item">
+      <a class="nav-link active" aria-current="page" href="http://127.0.0.1:5500/frontend/index.html">Scheduler</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="http://127.0.0.1:5500/frontend/employment.html">Employment Searching</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">Pricing</a>
+    </li>
+  </ul>
+
 </nav>
 
 <div class="app">
   <div class="timeline-panel">
-    <div class="timeline-header">
-      <h2 id="cal-date"></h2>
-      <p>Daily schedule</p>
-      <button id="print-btn">Print ⎙</button>
-    </div>
+<div class="timeline-header">
+  <h2 id="cal-date"></h2>
+  <p>Daily schedule</p>
+  <div style="display: flex; gap: 8px;">
+    <button id="print-btn">Print ⎙</button>
+    <!-- <button id="reset-btn" class="btn btn-light" >Reset 🗑️</button> -->
+  </div>
+</div>
     <div class="timeline-scroll" id="timeline-scroll">
       <div class="timeline-grid" id="timeline-grid"></div>
       <div class="events-layer" id="events-layer"></div>

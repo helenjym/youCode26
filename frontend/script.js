@@ -307,3 +307,24 @@ modal.style.display = 'none';
 renderEvents();
 });
 
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (!confirm('Are you sure you want to reset the scheduler? This will clear all events and activities.')) return;
+
+  // Clear all internal arrays
+  events = [];
+  freeBlocks = [];
+
+  // Clear popup.js activity data
+  activityData = [];
+  document.getElementById('activity-list').innerHTML = '';
+
+  // Reset the form
+  document.getElementById('ev-name').value = '';
+  document.getElementById('ev-start').value = '09:00';
+  document.getElementById('ev-end').value = '10:00';
+  document.getElementById('free-block-checkbox').checked = false;
+  document.getElementById('ev-name').disabled = false;
+
+  renderEvents();
+});
+
