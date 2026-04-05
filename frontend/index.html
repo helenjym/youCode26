@@ -1,97 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Calendar Scheduler</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; width: 100%; overflow: hidden; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; }
-  .app { display: flex; height: 100vh; width: 100vw; background: #fff; }
-
-  /* LEFT: Timeline */
-  .timeline-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #e5e5e4; min-width: 0; }
-  .timeline-header { padding: 14px 16px 10px; border-bottom: 1px solid #e5e5e4; }
-  .timeline-header h2 { font-size: 14px; font-weight: 600; color: #1c1c1a; }
-  .timeline-header p { font-size: 12px; color: #888780; margin-top: 2px; }
-  .timeline-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; }
-  .timeline-grid { position: relative; }
-  .hour-row { display: flex; align-items: flex-start; height: 52px; border-bottom: 1px solid #f0eeea; position: relative; }
-  .hour-label { width: 52px; min-width: 52px; font-size: 11px; color: #888780; padding: 4px 8px 0 8px; text-align: right; line-height: 1; }
-  .hour-line { flex: 1; height: 100%; position: relative; border-left: 1px solid #e5e5e4; }
-  .half-line { position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed #f0eeea; }
-  .events-layer { position: absolute; top: 0; left: 52px; right: 0; bottom: 0; pointer-events: none; }
-  .event-block { position: absolute; border-radius: 6px; padding: 4px 8px; pointer-events: auto; cursor: pointer; overflow: hidden; transition: opacity 0.15s; }
-  .event-block:hover { opacity: 0.82; }
-  .event-block .ev-title { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .event-block .ev-time { font-size: 10px; opacity: 0.75; margin-top: 1px; }
-  .current-time { position: absolute; left: 0; right: 0; height: 2px; background: #E24B4A; z-index: 10; pointer-events: none; }
-  .current-time::before { content: ''; position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; background: #E24B4A; border-radius: 50%; }
-
-  /* RIGHT: Form */
-  .form-panel { width: 300px; min-width: 300px; display: flex; flex-direction: column; background: #fafaf8; border-left: 1px solid #e5e5e4; }
-  .form-header { padding: 14px 16px 10px; border-bottom: 1px solid #e5e5e4; }
-  .form-header h2 { font-size: 14px; font-weight: 600; color: #1c1c1a; }
-  .form-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-  .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label { font-size: 12px; color: #5f5e5a; font-weight: 500; }
-  .field input, .field select {
-    font-size: 13px; padding: 7px 10px;
-    border: 1px solid #d3d1c7; border-radius: 8px;
-    background: #fff; color: #1c1c1a;
-    font-family: inherit; width: 100%; outline: none;
-    transition: border-color 0.15s;
-  }
-  .field input:focus { border-color: #888780; }
-  .color-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .color-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.1s, border-color 0.15s; }
-  .color-dot:hover { transform: scale(1.15); }
-  .color-dot.selected { border-color: #1c1c1a; }
-  .add-btn {
-    margin: 0 16px 16px; padding: 9px;
-    font-size: 13px; font-weight: 500;
-    border: 1px solid #d3d1c7; border-radius: 8px;
-    background: #fff; color: #1c1c1a;
-    cursor: pointer; font-family: inherit;
-    transition: background 0.15s;
-  }
-  .add-btn:hover { background: #f0eeea; }
-  .add-btn:active { transform: scale(0.98); }
-  .events-list { border-top: 1px solid #e5e5e4; overflow-y: auto; flex: 1; }
-  .events-list-header { padding: 10px 16px 6px; font-size: 12px; color: #888780; font-weight: 500; }
-  .event-item { padding: 8px 16px; display: flex; align-items: center; gap: 8px; border-top: 1px solid #f0eeea; }
-  .event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .event-item-info { flex: 1; min-width: 0; }
-  .event-item-info .name { font-size: 12px; font-weight: 500; color: #1c1c1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .event-item-info .time { font-size: 11px; color: #888780; }
-  .del-btn { background: none; border: none; cursor: pointer; color: #888780; font-size: 16px; padding: 2px 4px; border-radius: 4px; line-height: 1; flex-shrink: 0; transition: color 0.1s; }
-  .del-btn:hover { color: #1c1c1a; }
-  .empty-state { padding: 16px; text-align: center; font-size: 12px; color: #888780; }
-  .error-msg { font-size: 11px; color: #E24B4A; display: none; }
-  .field .field-label-row { display: flex;}
-  #free-block-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-}
-
-.field-label-row {
-  display: flex;
-  align-items: center;
-}
-  .input {position: relative; padding: 0;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendar Scheduler</title>
+  <link rel="stylesheet" href="style.css"></link>
 </head>
 <body>
 
 <div class="app">
-  <!-- LEFT: Timeline -->
   <div class="timeline-panel">
     <div class="timeline-header">
       <h2 id="cal-date"></h2>
       <p>Daily schedule</p>
+      <button id="print-btn">Print ⎙</button>
     </div>
     <div class="timeline-scroll" id="timeline-scroll">
       <div class="timeline-grid" id="timeline-grid"></div>
@@ -99,21 +21,18 @@
     </div>
   </div>
 
-  <!-- RIGHT: Form -->
   <div class="form-panel">
-    <div class="form-header">
-      <h2>Add event</h2>
-    </div>
+    <div class="form-header"><h2>Add event</h2></div>
     <div class="form-body">
       <div class="field">
         <div class="field-label-row">
           <label>Event name</label>
-          <div id='free-block-row'>
-            <label>Free block</label>
-            <input type="checkbox"/>
+          <div id="free-block-row">
+            <label style="font-size: 11px;">Free block</label>
+            <input type="checkbox" id="free-block-checkbox" />
           </div>
         </div>
-        <input type="text" id="ev-name" placeholder="Team standup..." maxlength="60" />
+        <input type="text" id="ev-name" maxlength="60" />
       </div>
       <div class="field">
         <label>Start time</label>
@@ -123,198 +42,37 @@
         <label>End time</label>
         <input type="time" id="ev-end" value="10:00" />
       </div>
-      <div class="field">
-        <label>Color</label>
-        <div class="color-row" id="color-row"></div>
-      </div>
       <div class="error-msg" id="error-msg"></div>
       <button class="add-btn" id="add-btn">+ Add to calendar</button>
-      <div class="events">
-        <label>Shelter Events</label>
-      </div>
+
       <div class="field">
-        <button id="free-block-btn">Schedule free blocks</button>
+        <label>Shelter Events</label>
+        <div id="shelter-events-container">
+          <div style="font-size: 12px; color: #888780; text-align: center; padding: 20px;">Loading events...</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <button id="free-block-btn" style="padding: 8px; font-size: 12px; cursor: pointer; background: none; border: 1px solid #d3d1c7; border-radius: 6px;">Schedule free blocks</button>
       </div>
     </div>
-
-    <!-- <div class="events-list">
-      <div class="events-list-header">Scheduled</div>
-      <div id="events-list-body"><div class="empty-state">No events yet</div></div>
-    </div> -->
   </div>
 </div>
 
-<script>
-  const HOUR_HEIGHT = 52;
-  const TOTAL_HOURS = 24;
+<div id="free-block-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+  <div style="background: #fff; width: 340px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative;">
+    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Schedule Free Blocks</h3>
+    <p style="font-size: 13px; color: #5f5e5a; margin-bottom: 20px; line-height: 1.5;">
+      Would you like to automatically fill gaps in your schedule with "Free Block" periods?
+    </p>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button id="confirm-free-blocks" style="width: 100%; padding: 10px; background: #1c1c1a; color: #fff; border: none; border-radius: 8px; font-size: 13px; cursor: pointer;">Generate Blocks</button>
+      <button id="close-modal" style="width: 100%; padding: 10px; background: #fff; color: #5f5e5a; border: 1px solid #d3d1c7; border-radius: 8px; font-size: 13px; cursor: pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
 
-  const COLORS = [
-    { bg: '#B5D4F4', text: '#0C447C', dot: '#378ADD' },
-    { bg: '#9FE1CB', text: '#085041', dot: '#1D9E75' },
-    { bg: '#F5C4B3', text: '#712B13', dot: '#D85A30' },
-    { bg: '#F4C0D1', text: '#72243E', dot: '#D4537E' },
-    { bg: '#CECBF6', text: '#3C3489', dot: '#7F77DD' },
-    { bg: '#FAC775', text: '#633806', dot: '#EF9F27' },
-    { bg: '#C0DD97', text: '#27500A', dot: '#639922' },
-    { bg: '#D3D1C7', text: '#444441', dot: '#888780' },
-  ];
-
-  let selectedColor = 0;
-  let events = [];
-
-  function pad(n) { return String(n).padStart(2, '0'); }
-
-  function formatTime(t) {
-    const [h, m] = t.split(':').map(Number);
-    const ampm = h < 12 ? 'am' : 'pm';
-    const hh = h % 12 || 12;
-    return `${hh}:${pad(m)} ${ampm}`;
-  }
-
-  function timeToMinutes(t) {
-    const [h, m] = t.split(':').map(Number);
-    return h * 60 + m;
-  }
-
-  function buildGrid() {
-    const grid = document.getElementById('timeline-grid');
-    let h = '';
-    for (let i = 0; i < TOTAL_HOURS; i++) {
-      const label = i === 0 ? '' : (i < 12 ? `${i} am` : i === 12 ? '12 pm' : `${i - 12} pm`);
-      h += `<div class="hour-row"><div class="hour-label">${label}</div><div class="hour-line"><div class="half-line"></div></div></div>`;
-    }
-    grid.innerHTML = h;
-    document.getElementById('events-layer').style.height = (TOTAL_HOURS * HOUR_HEIGHT) + 'px';
-  }
-
-  function renderEvents() {
-    const layer = document.getElementById('events-layer');
-    layer.querySelectorAll('.event-block, .current-time').forEach(e => e.remove());
-
-    // Overlap detection — assign columns
-    const sorted = [...events].sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
-    const cols = [];
-    sorted.forEach(ev => {
-      const sm = timeToMinutes(ev.start);
-      const em = timeToMinutes(ev.end);
-      let col = 0;
-      while (cols[col] && cols[col].some(g => timeToMinutes(g.start) < em && timeToMinutes(g.end) > sm)) col++;
-      if (!cols[col]) cols[col] = [];
-      cols[col].push(ev);
-      ev._col = col;
-    });
-    const totalCols = cols.length || 1;
-
-    events.forEach(ev => {
-      const sm = timeToMinutes(ev.start);
-      const em = timeToMinutes(ev.end);
-      const top = (sm / 60) * HOUR_HEIGHT;
-      const height = Math.max(((em - sm) / 60) * HOUR_HEIGHT, 20);
-      const colW = 100 / totalCols;
-      const c = COLORS[ev.colorIdx];
-      const div = document.createElement('div');
-      div.className = 'event-block';
-      div.style.cssText = `top:${top}px;height:${height}px;left:calc(${ev._col * colW}% + 6px);width:calc(${colW}% - 12px);background:${c.bg};`;
-      div.innerHTML = `<div class="ev-title" style="color:${c.text}">${ev.name}</div><div class="ev-time" style="color:${c.text}">${formatTime(ev.start)} – ${formatTime(ev.end)}</div>`;
-      div.title = 'Click to remove';
-      div.addEventListener('click', () => removeEvent(ev.id));
-      layer.appendChild(div);
-    });
-
-    // Current time marker
-    const now = new Date();
-    const nowMin = now.getHours() * 60 + now.getMinutes();
-    const marker = document.createElement('div');
-    marker.className = 'current-time';
-    marker.style.top = ((nowMin / 60) * HOUR_HEIGHT) + 'px';
-    layer.appendChild(marker);
-  }
-
-  function renderEventList() {
-    const body = document.getElementById('events-list-body');
-    if (!events.length) {
-      body.innerHTML = '<div class="empty-state">No events yet</div>';
-      return;
-    }
-    const sorted = [...events].sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
-    body.innerHTML = sorted.map(ev => {
-      const c = COLORS[ev.colorIdx];
-      return `<div class="event-item">
-        <div class="event-dot" style="background:${c.dot}"></div>
-        <div class="event-item-info">
-          <div class="name">${ev.name}</div>
-          <div class="time">${formatTime(ev.start)} – ${formatTime(ev.end)}</div>
-        </div>
-        <button class="del-btn" onclick="removeEvent('${ev.id}')">×</button>
-      </div>`;
-    }).join('');
-  }
-
-  function removeEvent(id) {
-    events = events.filter(e => e.id !== id);
-    renderEvents();
-    renderEventList();
-  }
-
-  function showError(msg) {
-    const el = document.getElementById('error-msg');
-    el.textContent = msg;
-    el.style.display = 'block';
-    setTimeout(() => el.style.display = 'none', 2500);
-  }
-
-  document.getElementById('add-btn').addEventListener('click', () => {
-    const name = document.getElementById('ev-name').value.trim();
-    const start = document.getElementById('ev-start').value;
-    const end = document.getElementById('ev-end').value;
-    if (!name) return showError('Please enter an event name.');
-    if (!start || !end) return showError('Please set start and end times.');
-    if (timeToMinutes(end) <= timeToMinutes(start)) return showError('End time must be after start time.');
-    events.push({ id: Date.now() + Math.random(), name, start, end, colorIdx: selectedColor });
-    document.getElementById('ev-name').value = '';
-    renderEvents();
-    renderEventList();
-    document.getElementById('timeline-scroll').scrollTop = Math.max(0, (timeToMinutes(start) / 60) * HOUR_HEIGHT - 80);
-  });
-
-  // Allow Enter key to add event
-  document.getElementById('ev-name').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('add-btn').click();
-  });
-
-  function buildColorPicker() {
-    const row = document.getElementById('color-row');
-    COLORS.forEach((c, i) => {
-      const d = document.createElement('div');
-      d.className = 'color-dot' + (i === 0 ? ' selected' : '');
-      d.style.background = c.dot;
-      d.title = 'Pick color';
-      d.addEventListener('click', () => {
-        selectedColor = i;
-        row.querySelectorAll('.color-dot').forEach((dd, j) => dd.classList.toggle('selected', j === i));
-      });
-      row.appendChild(d);
-    });
-  }
-
-  function setCalDate() {
-    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const d = new Date();
-    document.getElementById('cal-date').textContent = `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
-  }
-
-  buildGrid();
-  buildColorPicker();
-  setCalDate();
-  renderEvents();
-
-  // Scroll to current time
-  const now = new Date();
-  document.getElementById('timeline-scroll').scrollTop = Math.max(0, ((now.getHours() * 60 + now.getMinutes()) / 60) * HOUR_HEIGHT - 120);
-
-  // Refresh time marker every minute
-  setInterval(renderEvents, 60000);
-</script>
+<script src="script.js"></script>
 </body>
 </html>
